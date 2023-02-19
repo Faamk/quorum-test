@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Technical assessment for Quorum",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
@@ -16,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/Faamk/quorum-test/issues"
   },
-  "homepage": "https://github.com/Faamk/quorum-test#readme"
+  "homepage": "https://github.com/Faamk/quorum-test#readme",
+  "dependencies": {
+    "csv-parse": "^5.3.5"
+  }
 }
