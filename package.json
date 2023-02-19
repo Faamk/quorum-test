@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Faamk/quorum-test#readme",
   "dependencies": {
-    "csv-parse": "^5.3.5"
+    "csv-parse": "^5.3.5",
+    "csv-stringify": "^6.2.4"
   }
 }
