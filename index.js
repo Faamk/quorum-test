@@ -1,6 +1,5 @@
 import {parse} from 'csv-parse/sync';
 import {stringify} from 'csv-stringify';
-
 import fs from 'fs'
 
 class Legislator {
@@ -23,7 +22,7 @@ class VoteResult {
     vote_type
 }
 
-class LegislatorScore {
+class Score {
     vote_yay
     vote_nay
 
@@ -47,7 +46,23 @@ class LegislatorScoreOutput {
     }
 }
 
-const legislators = []
+class BillScoreOutput {
+    id
+    title
+    supporter_count
+    opposer_count
+    primary_sponsor
+
+    constructor(id, title, supporter_count, opposer_count, primary_sponsor) {
+        this.id = id;
+        this.title = title;
+        this.supporter_count = supporter_count;
+        this.opposer_count = opposer_count;
+        this.primary_sponsor = primary_sponsor;
+    }
+}
+
+const legislators = new Map()
 const bills = []
 const votes = new Map()
 const voteResults = []
@@ -55,13 +70,14 @@ const voteResults = []
 
 loadDataFromCsv()
 legislatorSupportCount()
+billSupportCountAndPrimarySponsor()
 
 
 function legislatorSupportCount() {
     const legislatorsIdAndVoteQuantity = new Map()
     voteResults.forEach(value => {
         if (!legislatorsIdAndVoteQuantity.get(value.legislator_id)) {
-            legislatorsIdAndVoteQuantity.set(value.legislator_id, new LegislatorScore(new Set(), new Set()))
+            legislatorsIdAndVoteQuantity.set(value.legislator_id, new Score(new Set(), new Set()))
         }
         let legScore = legislatorsIdAndVoteQuantity.get(value.legislator_id)
 
@@ -71,8 +87,10 @@ function legislatorSupportCount() {
             legScore.vote_nay.add(votes.get(value.vote_id).bill_id)
     })
 
-    const output = legislators.map(legislator => {
-        const votingScore = legislatorsIdAndVoteQuantity.get(legislator.id)
+    const output = []
+
+    legislators.forEach((legislator,index) => {
+        const votingScore = legislatorsIdAndVoteQuantity.get(index)
         let yayVotes, nayVotes
         if (votingScore) {
             yayVotes = votingScore.vote_yay.size
@@ -81,22 +99,48 @@ function legislatorSupportCount() {
             yayVotes = 0
             nayVotes = 0
         }
-        return new LegislatorScoreOutput(legislator.id, legislator.name, yayVotes, nayVotes)
+        output.push(new LegislatorScoreOutput(index, legislator.name, yayVotes, nayVotes))
     })
 
-    writeArrayObjectToCsv('question1.csv', output, ['id', 'name', 'num_supported_bills', 'num_opposed_bills'])
-
-
+    writeArrayObjectToCsv('legislators-support-oppose-count.csv', output, ['id', 'name', 'num_supported_bills', 'num_opposed_bills'])
 }
 
 function billSupportCountAndPrimarySponsor() {
-    bills.forEach(value => console.log(value))
+    const billSupporterAndOpposed = new Map()
+    voteResults.forEach(value => {
+        const billId = votes.get(value.vote_id).bill_id
+        if (!billSupporterAndOpposed.get(billId)) {
+            billSupporterAndOpposed.set(billId, new Score(new Set(), new Set()))
+        }
+        let legScore = billSupporterAndOpposed.get(billId)
+
+        if (value.vote_type == 2)
+            legScore.vote_yay.add(value.legislator_id)
+        else
+            legScore.vote_nay.add(value.legislator_id)
+    })
+
+    const output = bills.map(bill => {
+        const votingScore = billSupporterAndOpposed.get(bill.id)
+        let yayVotes, nayVotes
+        if (votingScore) {
+            yayVotes = votingScore.vote_yay.size
+            nayVotes = votingScore.vote_nay.size
+        } else {
+            yayVotes = 0
+            nayVotes = 0
+        }
+        const personName = legislators.get(bill.sponsor_id)? legislators.get(bill.sponsor_id).name: 'Unknown'
+        return new BillScoreOutput(bill.id, bill.title, yayVotes, nayVotes, personName)
+    })
+
+    writeArrayObjectToCsv('bills.csv', output, ['id', 'title', 'supporter_count', 'opposer_count', 'primary_sponsor'])
 }
 
 function loadDataFromCsv() {
 
     csvFileNameToArrayObject("input/legislators.csv").forEach(obj => {
-        legislators.push(Object.assign(new Legislator(), obj))
+        legislators.set(obj.id,Object.assign(new Legislator(), obj))
     })
 
     csvFileNameToArrayObject("input/bills.csv").forEach(obj => {
@@ -118,7 +162,6 @@ function writeArrayObjectToCsv(path, array, columns) {
         if (err) throw err;
         fs.writeFile(path, output, (err) => {
             if (err) throw err;
-            console.log('my.csv saved.');
         });
     });
 }
