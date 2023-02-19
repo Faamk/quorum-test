@@ -1,0 +1,20 @@
+{
+  "name": "quorum-test",
+  "version": "1.0.0",
+  "description": "Technical assessment for Quorum",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Faamk/quorum-test.git"
+  },
+  "author": "Fabrizio Menezes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Faamk/quorum-test/issues"
+  },
+  "homepage": "https://github.com/Faamk/quorum-test#readme"
+}
