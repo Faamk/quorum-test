@@ -32,9 +32,9 @@ export function loadDataFromCsv() {
 export function writeArrayObjectToCsv(path, array, columns) {
     stringify(array, {header: true, columns: columns}, (err, output) => {
         if (err) throw err;
-        fs.writeFile("output/" + path, output, (err) => {
+        fs.mkdir('output/', {recursive: true}, x => fs.writeFile("output/" + path, output, (err) => {
             if (err) throw err;
-        });
+        }));
     });
 }
 
