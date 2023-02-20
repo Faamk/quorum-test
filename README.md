@@ -24,8 +24,7 @@ And execute the project,
   npm start
 ```
 
-
-
+The output CSVs will be in the `/output` folder.
 
 
 ## Write up:
